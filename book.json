@@ -1,0 +1,51 @@
+{
+    "title": "Documentation of the Poppy Platform",
+
+    "plugins": [
+        "-share",
+        "edit-link",
+        "richquotes",
+        "github", 
+        "katex",
+        "ga",
+        "language-picker",
+        "retina",
+        "numbered-headings", 
+        "copy-code-button", 
+        "todo",
+        "youtube"
+    ],
+    "pluginsConfig": {
+        "github": {
+            "url": "https://github.com/poppy-project/poppy-docs"
+        },
+        "edit-link": {
+                "base": "https://github.com/poppy-project/poppy-docs/edit/master/",
+                "label": {
+                    "en": "Edit this page",
+                    "de": "Seite bearbeiten",
+                    "fr": "Editez cette page"
+                }
+        },
+        "ga": {
+            "token": "UA-44384879-1"
+        },
+        "sharing": {
+            "facebook": false,
+            "twitter": false,
+            "all": [
+                "twitter", "facebook", "google", "instapaper"      
+            ]
+        }
+    },
+    "variables": {
+        "poppy_doc_version": "1.0",
+        "poppy-humanoid_humanoid_hardware_version": "1.0",
+        "poppy-humanoid_humanoid_software_version": "1.0",
+        "poppy-torso_hardware_version": "1.0",
+        "poppy-torso_software_version": "1.0",
+        "poppy-ergo-jr_hardware_version": "1.0",
+        "poppy-ergo-jr_software_version": "1.0"
+    }
+    
+}

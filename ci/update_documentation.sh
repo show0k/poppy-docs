@@ -9,11 +9,11 @@ git_url=https://$GH_TOKEN@github.com/$GH_USERNAME/$GH_REPO.git
 # Configure Git to push with GitHub Oauth token
 # git remote set-url origin $git_url
 
-# Install Sphinx
-pip install -q --upgrade argvee
+# Push the broken links
+git add -A
+git commit -m "Update broken links after commit $last_commit_sha"
+git push $git_url master 
 
-# Build the doc
-python build.py all
 
 tmp_repo=/tmp/$GH_REPO-doc
 
@@ -23,10 +23,8 @@ fi
 mkdir $tmp_repo
 
 git clone -b gh-pages $git_url $tmp_repo
-cp $GH_REPO.html $tmp_repo/index.html
-cp $GH_REPO.pdf $tmp_repo
-cp -r img/ $tmp_repo/
-cp -r css/ $tmp_repo/
+cp -r _book/* $tmp_repo/
+cp *.pdf $tmp_repo/
 
 # Upload it to gh-pages
 # Exit if commit is untrusted
@@ -38,10 +36,11 @@ if [[ "$TRAVIS" == "true" ]]; then
         set +e
         # Push the new documentation only if it is not a pull request and we are on master
         pushd $tmp_repo
-            git push origin --delete --quiet gh-pages
+            # /dev/null to hide any sensitive credential data that might otherwise be exposed.
+            git push origin --delete --quiet gh-pages > /dev/null 2>&1
             git add -A
             git commit -m "Doc generated after commit $last_commit_sha (travis build #$TRAVIS_BUILD_NUMBER)"
-            git push origin gh-pages --quiet
+            git push --force --quiet origin gh-pages 
         popd
     fi
 fi

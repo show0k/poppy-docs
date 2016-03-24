@@ -1,28 +1,35 @@
-language: python
-python:
-- 2.7
-sudo: required
+language: node_js
+node_js:
+- '4.0'
 env:
   global:
-  - GH_USERNAME: poppy-project
-  - GH_REPO: poppy-docs
-  - GIT_EMAIL: poppy-bot-ci@inria.fr
-  - GIT_NAME: poppy-bot
-  - secure: "XEjzjNj3b0IzkqLW9bFpdDerMTMZ7TAbY8TzjXKqtTKUPuXL5Tu5X+l99KM5i0qDo5cfnSz2czMwdzgOUtrL6gtaZsuI0hN002KhWub0s6m+mWKM8MMP3drIcJFXts81mXYA8gxOXYBHCSi+4u7/HAMx9zzE866yEc+QPlC8y7fIys2nE/+4HtLs2rDuBQ3OAz9Mrzp4dujhiBu9ZLx57ryrInl2ugCLmJqJ73T+amMqd7tAe3fw/mS/Jm/2ouXZvBQppRkCjYRB3CgAJZMgqbyEbJzeFE5dAieeifxhH8xDkmjbP9KqTlQ+u+dNFjI8o/Katgbqf9tpDNYUYSU55wt4Zar6x5jKklbYko6bXNxyRx80UJOI3AY0YjtVlJq/gGuaTh6kNyKvzpTlKrW+JMjuOh6rabDUpe8z755V1L7DMRL/orCyhQTOlMZ218e8RVnHuGx+sk3RMcgPBtOi7nVclKgOdtCHWLPHKhL0G++vUEnDJ8KUtyyqingpNX3xVKoxmnrlz+oK3xasAV4RJmOEW6CaASE6s4SG5DJBNBRCJgcM9czfG6lpr1LmgmpKzY5ii8eJ4NnZXoULPqD7RQPFpc0onhVjsLannll5pvXCfI/HJU7d1AKj2KWq9o4SU92AcaM/GaD3OLqwXI77/MOhis7bF+J/NlXNoGianzQ="
-
+  - CXX=g++-4.8
+  - GH_USERNAME=poppy-project
+  - GH_REPO=poppy-docs
+  - GIT_EMAIL=poppy-bot-ci@inria.fr
+  - GIT_NAME=poppy-bot
+  - secure: OVutpst8wzg5cyPfN6G8rmQwOspHowtccO2YvIppz1uzO6m5Zyck+6LBwGa7QOdlZ6ZFFnHlkpv0jP2ERmlkfum3IlE8GTCl+1bOUKoZzP7dtViMzcXffPZlSn+2ZBoYoVoRskuII/2rO0BA2GEuKkcoY7GPxZW3R8bj0ts742NMYjh5nEcrrKeeId4vsQmh3c9a7XK1P6xZiX4kKtDsyYMY/U1OTAHnwATUYeDLKDwEkGV30qL/nzb/ZDTSFRQLRWAKp4Ilu3ihiBa1nfdzJfrEfZHVdMYePRMLhoin1ZzQw0q6SmA7E3mff8NA0k3ICvHQs8FVlSIoDgeSAl0aQgl2kU0NqLOi3EJ6xuKNnzq01kOt9YNH2SqBN3XTWNXVs1DKZe9ys5HqFRs72BztD2DpNrzZnAsiVLKsWA0BVKvp/IisxOxG60XjRJDYMhOTUtqgo1Its2WjhOPB2oTQiVO1i5QznFiA5Sp46Ok4VuBulNzmaYrZINB+P9udLew28N0WNnbDkaXDnNUNUABflm0gIexFt7GpytUbsew/+dlUUEM98QIwJ8/g8Ew/bIzkKyWnRfy6E6hIDk2o+kqG1ocNsLaRcqFfmXwsoJ3TOveroptcjcHEwoPMGJqvzdNPtJ1kW6Jvd/dwG2efUehHvN6tTHrJ9rCJvnfaEEVw/Jk=
 addons:
   apt:
+    sources:
+    - ubuntu-toolchain-r-test
     packages:
-    - texlive
-    - texlive-latex-extra
-    - dvipng
-    - lmodern
+    - g++-4.8
 before_install:
-- ". ./ci/before_install.sh"
+- npm install gitbook-cli -g
+- npm install broken-link-checker -g
+- npm install http-server -g
+- gitbook install
+- wget -nv -O- https://raw.githubusercontent.com/kovidgoyal/calibre/master/setup/linux-installer.py
+  | python -c "import sys; main=lambda x,y:sys.stderr.write('Download failed\n');
+  exec(sys.stdin.read()); main('~/calibre-bin', True)" > /dev/null
 script:
+- set +e
+- export PATH=$PATH:$HOME/calibre-bin/calibre
+- gitbook build ./
+- gitbook pdf ./
+- cd _book/ && http-server -p 8081 -s &
+- blc http://localhost:8081/en/index.html -ro --exclude poppy.local  | tee contributing/checked_links.txt
+- grep -e 'BROKEN' -e 'Getting links from' -e 'Error' contributing/checked_links.txt
+  > contributing/broken_links.txt
 - ". ./ci/update_documentation.sh"
-notifications:
-  email:
-  - poppy-bot-ci@inria.fr
-  on_failure: change
-  on_success: change
